@@ -1,0 +1,37 @@
+# Definir el entorno CMSSW
+CMSSW_BASE = $(shell echo $$CMSSW_BASE)
+include $(CMSSW_BASE)/src/Makefile.common
+
+# Nombre del archivo de salida
+EXEC = filter_mu
+
+# Archivos fuente C++
+SRC = filter_mu.cpp
+
+# Archivo de cabecera (si tienes uno)
+HEADERS = vectorDict.h
+
+# Archivos objeto
+OBJ = $(SRC:.cpp=.o)
+
+# Comando de compilación
+CXX = g++
+CXXFLAGS = -g -O2 -Wall -I$(CMSSW_BASE)/src -I$(CMSSW_BASE)/src/DataFormats/MuonReco/interface
+LDFLAGS = $(shell root-config --libs) -L$(CMSSW_BASE)/lib/slc6_amd64_gcc472 -lPhysics
+
+# Enlace de los objetos para crear el ejecutable
+$(EXEC): $(OBJ)
+	$(CXX) -o $(EXEC) $(OBJ) $(LDFLAGS)
+
+# Regla para compilar los archivos fuente
+%.o: %.cpp $(HEADERS)
+	$(CXX) $(CXXFLAGS) -c $<
+
+# Limpiar los archivos generados
+clean:
+	rm -f $(OBJ) $(EXEC)
+
+# Reglas adicionales para generar el diccionario
+dict: $(HEADERS)
+	@echo "Generando diccionario para clases STL"
+	@rootcint -f vectorDict.cpp -c $(HEADERS)

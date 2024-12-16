@@ -1,0 +1,3 @@
+<package name="Filtro" version="1.0.0" >
+  <depend>DataFormats/MuonReco</depend>
+</package>
