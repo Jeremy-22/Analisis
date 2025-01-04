@@ -53,23 +53,24 @@ int main(int argc, char** argv) {
         std::cerr << "Error al abrir el archivo de salida ROOT." << std::endl;
         return 1;
     }
-
     // Crear vectores para almacenar las variables de electrones
     std::vector<float>* electron_pt = new std::vector<float>();
     std::vector<float>* electron_eta = new std::vector<float>();
     std::vector<float>* electron_e = new std::vector<float>();
+    std::vector<float>* electron_ch = new std::vector<float>();
+    std::vector<float>* electron_iso = new std::vector<float>();
+    std::vector<bool>* electron_isTight = new std::vector<bool>();
 
-    // Establecer las direcciones de las ramas
     tree_electron->SetBranchAddress("electron_pt", &electron_pt);
     tree_electron->SetBranchAddress("electron_eta", &electron_eta);  
     tree_electron->SetBranchAddress("electron_e", &electron_e);      
+    tree_electron->SetBranchAddress("electron_iso", &electron_iso);
+    tree_electron->SetBranchAddress("electron_isTight", &electron_isTight);
 
-    // Crear un árbol filtrado
     TTree *filteredTree = tree_electron->CloneTree(0);
 
     // Obtener el número de entradas en el árbol
     Long64_t nEntries = tree_electron->GetEntries();
-
     // Procesar las entradas
     for (Long64_t i = 0; i < nEntries; ++i) {
         tree_electron->GetEntry(i);
@@ -78,10 +79,11 @@ int main(int argc, char** argv) {
         bool passFilter = true;
         for (size_t j = 0; j < electron_pt->size(); ++j) {
         float eta = electron_eta->at(j);
-            if (electron_pt->at(j) < 50.0 || 
-                std::abs(eta) > 2.47 || 
-                (std::abs(eta) > 1.327 && std::abs(eta) < 1.52) ||electron_e -> at(j) < 25)//std::abs(electron_eta->at(j)) < 2.4 && !(std::abs(electron_eta->at(j)) > 1.37 && std::abs(electron_eta->at(j)) < 1.52))
-             {
+            if (electron_isTight -> at(j) || electron_pt->at(j) < 20.0 ||
+                std::abs(eta) > 2.47 || (std::abs(eta) > 1.327 && std::abs(eta) < 1.52)
+                || electron_e -> at(j) < 20
+                || electron_iso -> at(j) > 2)
+     {
                 passFilter = false;  // Si alguno no pasa, el evento es descartado
                 break;
                 std::cout << "Evento " << i << " pasa el filtro con pt: " << electron_pt->at(j) << std::endl;
