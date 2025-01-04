@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    TTree *tree_muon = (TTree*)file->Get("mymuons/Events");
+    TTree tree_muon = (TTree)file->Get("mymuons/Events");
     if (!tree_muon) {
         std::cerr << "Error: No se encontró el árbol 'Events'." << std::endl;
         return 1;
@@ -50,8 +50,21 @@ int main(int argc, char** argv) {
         std::cerr << "Error al abrir el archivo de salida ROOT." << std::endl;
         return 1;
     }
+
     std::vector<float>* muon_pt = new std::vector<float>();
+    std::vector<float>* muon_eta = new std::vector<float>();
+    std::vector<float>* muon_e = new std::vector<float>();
+    std::vector<float>* muon_pfreliso03all = new std::vector<float>();
+    std::vector<float>* muon_pfreliso04all = new std::vector<float>();
+    std::vector<float>* muon_tightid = new std::vector<float>();
+
     tree_muon->SetBranchAddress("muon_pt", &muon_pt);
+    tree_muon->SetBranchAddress("muon_eta", &muon_eta);  
+    tree_muon->SetBranchAddress("muon_e", &muon_e);      
+    tree_muon->SetBranchAddress("muon_pfreliso04all", &muon_pfreliso04all);      
+    tree_muon->SetBranchAddress("muon_pfreliso03all", &muon_pfreliso03all);      
+    tree_muon->SetBranchAddress("muon_tightid", &muon_tightid);
+
     TTree *filteredTree = tree_muon->CloneTree(0);
 
     Long64_t nEntries = tree_muon->GetEntries();
@@ -59,19 +72,26 @@ int main(int argc, char** argv) {
     for (Long64_t i = 0; i < nEntries; ++i) {
         tree_muon->GetEntry(i);
 
-        bool passFilter = false;
+        bool passFilter = true;
         for (size_t j = 0; j < muon_pt->size(); ++j) {
-            if (muon_pt->at(j) < 10.0)
+        float eta = muon_eta->at(j);
+            if (muon_tightid->at(j) ==1 ||muon_pt->at(j) > 100.0 || muon_pt->at(j) < 5.0
+                || std::abs(eta) > 2.4
+                || muon_e -> at(j) < 5.0
+                || muon_pfreliso03all -> at(j) <= 0 || muon_pfreliso03all -> at(j) <= 0 || muon_pfreliso03all -> at(j) > 0.30 || muon_pfreliso03all -> at(j) > 0.30)
              {
-                passFilter = true; 
-                //break;
+                passFilter = true;
+                break;
             }
         }
+        
         if (passFilter) {
             filteredTree->Fill();
         }
     }
+
     filteredTree->Write();
+    
     outputFile->Close();
     file->Close();
 

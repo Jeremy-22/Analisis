@@ -2,7 +2,7 @@
 // Version: ROOT 6.30/08
 // Descripcion; Filtra y combina las ramas no filtradas en un mismo archivo .root
 //
-// Creado:  09 Dec 2024
+// Creado:  03 Enero 2025
 // Last Modified: 13 Dec 2024
 // Author: Jeremy Rangel
 // Contacto: jeryrangmart@gmail.com
@@ -52,22 +52,27 @@ int main(int argc, char** argv) {
         file->Close();
         return 1;
     }
-
-
-    float met_pt = 0.0f;
+    float met_significance = 0.0f;
+    float met_e = 0.0f;
     tree_met->SetBranchAddress("met_pt", &met_pt);
+    tree_met->SetBranchAddress("met_significance", &met_significance);
+    tree_met->SetBranchAddress("met_e", &met_e);    
 
     TTree* filteredTree = tree_met->CloneTree(0);
 
     float filtered_met_pt = 0.0f;
+    float filtered_met_significance = 0.0f; 
+    float filtered_met_e = 0.0f; 
     filteredTree->Branch("met_pt", &filtered_met_pt, "met_pt/F");
+    filteredTree->Branch("met_significance", &filtered_met_significance, "met_significance/F");    
+    filteredTree->Branch("met_e", &filtered_met_e, "met_e/F");    
 
     Long64_t nEntries = tree_met->GetEntries();
 
     for (Long64_t i = 0; i < nEntries; ++i) {
         tree_met->GetEntry(i);
 
-        if (met_pt > 20.0) {
+        if (met_pt > 20.0 && met_significance > 5 && met_e > 20){
             filtered_met_pt = met_pt;
             filteredTree->Fill();
         }

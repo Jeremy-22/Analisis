@@ -59,7 +59,9 @@ int main(int argc, char** argv) {
         tree_tau->GetEntry(i);
         bool passFilter = true;
        for (size_t j = 0; j < tau_pt->size(); ++j) {
-            if (tau_pt->at(j) > 150.0)
+        float eta = tau_eta ->at(j);
+            if (tau_pt->at(j) > 150.0
+            || eta > 2.47)
              {
                 passFilter = false;
           //      break;
